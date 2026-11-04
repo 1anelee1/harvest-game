@@ -43,10 +43,10 @@ body {
 .game { position: relative; border-radius: 24px; overflow: hidden; background: #e2e6f3; box-shadow: 0 12px 30px rgba(40,50,90,.25); }
 canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; touch-action: manipulation; cursor: pointer; }
 
-.hud { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
+.hud { position: absolute; z-index: 8; top: 10px; left: 10px; right: 10px; display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
 .sq { pointer-events: auto; appearance: none; border: 0; width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(var(--blue-top), var(--blue)); color: #fff; display: grid; place-items: center; cursor: pointer; box-shadow: 0 4px 0 var(--blue-dark), inset 0 2px 0 rgba(255,255,255,.35); }
 .hud-r { display: flex; gap: 8px; }
-.hud2 { position: absolute; top: 62px; left: 10px; right: 10px; display: flex; justify-content: space-between; pointer-events: none; }
+.hud2 { position: absolute; z-index: 8; top: 62px; left: 10px; right: 10px; display: flex; justify-content: space-between; pointer-events: none; }
 .pill { display: flex; align-items: center; gap: 5px; height: 30px; padding: 0 10px 0 5px; border-radius: 15px; background: rgba(29,35,64,.78); color: #fff; font: 15px var(--display); box-shadow: 0 2px 0 rgba(0,0,0,.25); }
 .skybar { display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 8px 0 6px; border-radius: 15px; background: rgba(29,35,64,.78); color: #fff; font: 14px var(--display); box-shadow: 0 2px 0 rgba(0,0,0,.25); }
 .skybar .sb-ico { font-size: 16px; line-height: 1; }
@@ -68,6 +68,25 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
 
 .toast { position: absolute; left: 14px; right: 14px; top: 56%; background: rgba(29,35,64,.92); color: #fff; border-radius: 14px; padding: 10px 14px; font-weight: 700; font-size: .9rem; line-height: 1.35; text-align: center; opacity: 0; transform: translateY(6px); transition: opacity .2s, transform .2s; pointer-events: none; }
 .toast.show { opacity: 1; transform: none; }
+/* tutorial on level 1: the game dims (except a spotlight on what we talk about), a bubble sits in the centre */
+.tut-dim { position: absolute; inset: 0; z-index: 4; background: rgba(0,0,0,.6); pointer-events: auto; }
+.tut-dim.free { pointer-events: none; background: none !important; }
+.tip { position: absolute; left: 14px; right: 14px; top: 50%; z-index: 6; background: #fffdf4; color: #2a2010; border: 3px solid #ffb52e; border-radius: 22px; padding: 14px 16px 16px;
+  font: 600 1.28rem/1.35 var(--body); text-align: center; box-shadow: 0 8px 0 rgba(120,70,0,.25), 0 14px 30px rgba(0,0,0,.4); transform: translateY(-50%); animation: tipIn .3s cubic-bezier(.2,1.5,.4,1) both; }
+.tip.low { top: 74%; }
+.tip.high { top: 31%; }
+.tip b { color: #c25e00; font-weight: 800; }
+.tip .tip-who { display: block; font-size: 2.4rem; line-height: 1.1; margin-bottom: 4px; }
+.tip.praise .tip-who { font-size: 3.6rem; animation: cheer .8s ease-in-out infinite alternate; }
+.tip .tip-step { display: block; font: 400 .78rem var(--display); color: #b39150; letter-spacing: .06em; margin-bottom: 2px; }
+.tip .ov-btn { display: block; margin: 12px auto 0; font-size: 1.15rem; padding: 12px 30px; }
+.tut-hand { position: absolute; z-index: 7; width: 58px; height: 58px; margin: 0 0 0 -29px; border-radius: 50%; background: #fff; border: 3px solid #1d2340;
+  display: grid; place-items: center; font-size: 34px; line-height: 1; pointer-events: none; box-shadow: 0 0 0 5px rgba(255,214,60,.85), 0 6px 14px rgba(0,0,0,.45); animation: poke .8s ease-in-out infinite; }
+@keyframes poke { 50% { transform: translateY(10px); } }
+@keyframes cheer { to { transform: scale(1.15) rotate(-8deg); } }
+@keyframes tipIn { from { opacity: 0; transform: translateY(-50%) scale(.85); } to { opacity: 1; transform: translateY(-50%); } }
+.helpers.locked { pointer-events: none; opacity: .55; }
+@media (prefers-reduced-motion: reduce) { .tip, .tut-hand, .tip.praise .tip-who { animation: none; } }
 
 .helpers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-top: 6px; }
 .helper { appearance: none; border: 0; position: relative; border-radius: 20px; padding: 8px 4px 10px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer;
@@ -82,7 +101,7 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
 .badge { position: absolute; top: -8px; right: -6px; min-width: 26px; height: 26px; border-radius: 13px; padding: 0 6px; background: var(--green); border: 2px solid #fff; color: #fff; display: grid; place-items: center; font: 13px var(--display); text-shadow: none; }
 .sq:focus-visible, .helper:focus-visible, .ov-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 
-.overlay { position: absolute; inset: 0; background: rgba(29,35,64,.55); display: grid; place-items: center; padding: 22px; backdrop-filter: blur(2px); }
+.overlay { position: absolute; z-index: 20; inset: 0; background: rgba(29,35,64,.55); display: grid; place-items: center; padding: 22px; backdrop-filter: blur(2px); }
 .overlay[hidden] { display: none; }
 .ov-card { background: var(--card); border-radius: 22px; padding: 22px 20px; max-width: 320px; display: flex; flex-direction: column; gap: 10px; text-align: center; box-shadow: 0 8px 0 rgba(0,0,0,.15); }
 .ov-card h2 { margin: 0; font: 400 1.6rem var(--display); color: var(--ink); text-wrap: balance; }
@@ -157,7 +176,7 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
 <body>
 <div class="wrap">
   <div class="game" id="game">
-    <canvas id="cv" width="400" height="750" aria-label="Игровое поле: очередь фруктов, парковка и пробка из ящиков"></canvas>
+    <canvas id="cv" width="400" height="750" aria-label="Игровое поле: очередь ящиков, зона ожидания и поле с фруктами"></canvas>
     <div class="hud">
       <button class="sq" id="restartBtn" aria-label="Начать уровень заново">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 3.8v4.6h4.6"/></svg>
@@ -177,19 +196,22 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
       <span class="skybar" id="skybar" role="timer" aria-label="Время до дождя"><span class="sb-ico" aria-hidden="true">☀️</span><span class="sb-track"><i id="timerFill"></i></span><span id="timer">2:00</span><span class="sb-ico" aria-hidden="true">🌧️</span></span>
     </div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="tut-dim" id="tutDim" hidden></div>
+    <div class="tut-hand" id="tutHand" aria-hidden="true" hidden>👆</div>
+    <div class="tip" id="tip" role="dialog" aria-live="polite" hidden></div>
     <div class="overlay" id="overlay" hidden>
       <div class="ov-card" id="ovCard"></div>
     </div>
   </div>
 
-  <div class="helpers">
+  <div class="helpers" id="helpers">
     <button class="helper" id="vipBtn">
       <span class="ico"><svg viewBox="0 0 48 48"><rect x="6" y="6" width="36" height="4" rx="2" fill="#ffd36b"/><rect x="22" y="8" width="4" height="8" fill="#9a6a00"/><rect x="8" y="16" width="32" height="20" rx="8" fill="#ff9f1c"/><rect x="26" y="19" width="10" height="9" rx="3" fill="#bfe6ff"/><circle cx="15" cy="37" r="4" fill="#2b2f45"/><circle cx="33" cy="37" r="4" fill="#2b2f45"/></svg></span>
       VIP<span class="badge price"><span class="coin">$</span>100</span>
     </button>
     <button class="helper" id="sortBtn">
-      <span class="ico"><svg viewBox="0 0 48 48"><rect x="5" y="12" width="38" height="28" rx="5" fill="#a96a32"/><rect x="5" y="10" width="38" height="26" rx="5" fill="#e0a868" stroke="#6e4119" stroke-width="2"/><rect x="10" y="15" width="8" height="8" rx="2" fill="#ff1f2a"/><rect x="20" y="15" width="8" height="8" rx="2" fill="#ffd700"/><rect x="30" y="15" width="8" height="8" rx="2" fill="#32cd32"/><rect x="10" y="25" width="8" height="7" rx="2" fill="#1f5fff"/><rect x="20" y="25" width="8" height="7" rx="2" fill="#a020f0"/><rect x="30" y="25" width="8" height="7" rx="2" fill="#ff8c00"/></svg></span>
-      Упорядочить<span class="badge" id="sortCount">1</span>
+      <span class="ico"><svg viewBox="0 0 48 48"><path d="M10 8h9v18a5 5 0 0 0 10 0V8h9v18a14 14 0 0 1-28 0z" fill="#e5333d" stroke="#8a1820" stroke-width="2"/><rect x="10" y="8" width="9" height="8" fill="#dfe5ee" stroke="#5b6478" stroke-width="2"/><rect x="29" y="8" width="9" height="8" fill="#dfe5ee" stroke="#5b6478" stroke-width="2"/><path d="M14 22a10 10 0 0 0 4 10" stroke="#ff9a9f" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></span>
+      Магнит<span class="badge" id="sortCount">1</span>
     </button>
     <button class="helper" id="shuffleBtn">
       <span class="ico"><span class="ball"></span></span>
@@ -271,17 +293,16 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
     im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -12 24 24" width="112" height="112"><defs>${LIGHT}${GL_DEF}</defs><g filter="url(#v)" style="filter:url(#v) saturate(1.25)">${FRUIT[c]}</g>${glossSvg(c)}</svg>`);
   }
 
-  const LEVELS = [
-    { colors: 3, n: 12, bus: .25, hidden: 0,   mix: 1, garages: 0 },
-    { colors: 4, n: 17, bus: .3,  hidden: .12, mix: 3, garages: 0 },
-    { colors: 5, n: 19, bus: .3,  hidden: .18, mix: 5, garages: 1 },
-    { colors: 6, n: 23, bus: .35, hidden: .22, mix: 7, garages: 1 },
-    { colors: 6, n: 26, bus: .35, hidden: .28, mix: 9, garages: 1 },
-  ];
+  // Each level: how many crates (3 fruits each), how many colours, how much the order is
+  // shuffled away from the crate order (the puzzle), and how many fruits start hidden.
   const LEVEL_COUNT = 15;
-  const levelCfg = li => li < LEVELS.length ? LEVELS[li]
-    : { colors: 6, n: 26 + Math.min(4, li - 4), bus: .38, hidden: .3, mix: 9 + li, garages: li >= 7 ? 2 : 1 };
-  const GARAGE_SIZE = 4;
+  const levelCfg = li => [
+    { crates: 5, colors: 3, mix: 6, hidden: 0 },
+    { crates: 7, colors: 4, mix: 12, hidden: 0 },
+    { crates: 9, colors: 4, mix: 18, hidden: .1 },
+    { crates: 11, colors: 5, mix: 26, hidden: .15 },
+    { crates: 12, colors: 5, mix: 34, hidden: .2 },
+  ][li] || { crates: Math.min(18, 12 + (li - 4)), colors: 6, mix: 40 + li * 6, hidden: .25 };
   // seconds on the clock: 2 minutes, a little more on the bigger levels
   const timeFor = li => 120 + Math.min(60, Math.max(0, li - 4) * 6);
 
@@ -291,6 +312,9 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
   const STRIP_Y = 305, ROAD_Y = 404, SLOT_Y = 352, SLOT_W = 44, SLOT_H = 68;
   const slotX = i => 44 + i * 52;
   const COLS = 10, ROWS = 9, CELL = 34, GX = 30, GY = 424;
+  // the fruit field (Bus Jam style): fruits leave through the top edge
+  const FC = 9, FR_MAX = 7, FCELL = 38, FGX = (400 - 9 * 38) / 2, FGY = 444, FRUIT_GRID = 30;
+  const OPEN_SLOTS = 5, PAID_SLOTS = 2, CRATE_CAP = 3, CRATE_GAP = 56;
   const DIRS = { U: [0, -1], D: [0, 1], L: [-1, 0], R: [1, 0] };
   const ANG = { R: 0, D: Math.PI / 2, L: Math.PI, U: -Math.PI / 2 };
   const inMask = (c, r) => c >= 0 && c < COLS && r >= 0 && r < ROWS && Math.abs(c + .5 - COLS / 2) <= 1.6 + r * .5;
@@ -386,57 +410,80 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
   function shuffle(a, rand) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
   // ---------- level generation ----------
-  // Vans are placed one by one so that each new van can drive out past the earlier ones.
-  // Removing them newest-first is therefore always possible, and at any moment at least one van is free.
-  function generate(li) {
-    const cfg = levelCfg(li);
-    const rand = rng(4242 + li * 7919);
-    const occ = new Set(), vans = [], garages = [];
-    // A garage takes 2 cells and keeps releasing vans into the 2 cells in front of it.
-    for (let tries = 0; garages.length < cfg.garages && tries < 4000; tries++) {
-      const c = Math.floor(rand() * COLS), r = Math.floor(rand() * ROWS);
-      const dir = 'UDLR'[Math.floor(rand() * 4)], [dx, dy] = DIRS[dir];
-      const all = [[c - dx, r - dy], [c, r], [c + dx, r + dy], [c + 2 * dx, r + 2 * dy]];
-      if (!all.every(([a, b]) => inMask(a, b) && !occ.has(a + ',' + b))) continue;
-      let ok = true;
-      for (let x = c + 3 * dx, y = r + 3 * dy; x >= 0 && x < COLS && y >= 0 && y < ROWS; x += dx, y += dy) if (occ.has(x + ',' + y)) { ok = false; break; }
-      if (!ok) continue;
-      all.forEach(([a, b]) => occ.add(a + ',' + b));
-      garages.push({ dir, cells: [all[1], all[0]], spawn: [all[3], all[2]], queue: [] });
-      vans.push({ dir, len: 2, cells: [all[3], all[2]], cap: 6, fromGarage: true });
-    }
-    for (let tries = 0; vans.length < cfg.n && tries < 20000; tries++) {
-      const c = Math.floor(rand() * COLS), r = Math.floor(rand() * ROWS);
-      const dir = 'UDLR'[Math.floor(rand() * 4)], [dx, dy] = DIRS[dir];
-      const len = rand() < cfg.bus ? 3 : 2;
-      const cells = []; let ok = true;
-      for (let k = 0; k < len; k++) {
-        const cc = c - dx * k, rr = r - dy * k;
-        if (!inMask(cc, rr) || occ.has(cc + ',' + rr)) { ok = false; break; }
-        cells.push([cc, rr]);
+  // Plays a sending order through the crate queue and returns the most fruits ever waiting
+  // (Infinity if a fruit would find no place).
+  function simulate(seq, crates, cap) {
+    let cur = 0, load = 0, most = 0; const wait = [];
+    const pull = () => {
+      while (cur < crates.length) {
+        if (load === CRATE_CAP) { cur++; load = 0; continue; }
+        const i = wait.indexOf(crates[cur]); if (i < 0) break;
+        wait.splice(i, 1); load++;
       }
-      if (!ok) continue;
-      for (let x = c + dx, y = r + dy; x >= 0 && x < COLS && y >= 0 && y < ROWS; x += dx, y += dy) if (occ.has(x + ',' + y)) { ok = false; break; }
-      if (!ok) continue;
-      cells.forEach(([a, b]) => occ.add(a + ',' + b));
-      vans.push({ dir, len, cells, cap: len === 3 ? 9 : 6 });
+    };
+    for (const c of seq) {
+      if (cur < crates.length && c === crates[cur]) { load++; pull(); }
+      else { wait.push(c); most = Math.max(most, wait.length); if (wait.length > cap) return Infinity; }
     }
+    return most;
+  }
+  // Builds a level that is always solvable: we pick a sending order that never overflows the
+  // waiting area, then place the fruits so that this order can actually be tapped (each fruit
+  // can reach the top edge once the fruits sent before it are gone).
+  function generate(li) {
+    const cfg = levelCfg(li), rand = rng(4242 + li * 7919);
     const colors = ORDER.slice(0, cfg.colors);
-    const extra = garages.length * (GARAGE_SIZE - 1);
-    const pool = shuffle(Array.from({ length: vans.length + extra }, (_, i) => colors[i % colors.length]), rand);
-    vans.forEach((v, i) => { v.color = pool[i]; v.hidden = !v.fromGarage && rand() < cfg.hidden; });
-    garages.forEach((g, gi) => { g.queue = pool.slice(vans.length + gi * (GARAGE_SIZE - 1), vans.length + (gi + 1) * (GARAGE_SIZE - 1)); });
-    const blocks = [...vans].reverse().map(v => ({ color: v.color, rows: v.cap / 3 }));
-    garages.forEach(g => g.queue.forEach(c => blocks.push({ color: c, rows: 2 })));
-    for (let k = 0; k < cfg.mix; k++) { const i = Math.floor(rand() * (blocks.length - 1)); [blocks[i], blocks[i + 1]] = [blocks[i + 1], blocks[i]]; }
-    const layout = layoutFor(li), nArms = LAYOUTS[layout].arms.length;
-    const arms = Array.from({ length: nArms }, () => []);
-    blocks.forEach(b => { const a = nArms === 1 ? 0 : (rand() < .5 ? 0 : 1); for (let j = 0; j < b.rows; j++) arms[a].push(b.color); });
-    // parked cars block a parking spot until a van of their colour has been filled
-    const carCount = li >= 11 ? 2 : li >= 6 ? 1 : 0, carCols = [];
-    const avail = [...new Set(vans.map(v => v.color))];
-    for (let k = 0; k < carCount && avail.length; k++) carCols.push(avail.splice(Math.floor(rand() * avail.length), 1)[0]);
-    return { vans, arms, garages, layout, cars: carCols };
+    const carCount = li >= 11 ? 2 : li >= 6 ? 1 : 0;
+    // crate order: every colour appears, no colour three times in a row
+    const crates = [];
+    for (let i = 0; i < cfg.crates; i++) {
+      let c;
+      do { c = i < colors.length ? colors[i] : colors[Math.floor(rand() * colors.length)]; }
+      while (crates.length >= 2 && crates[crates.length - 1] === c && crates[crates.length - 2] === c);
+      crates.push(c);
+    }
+    shuffle(crates, rand);
+    const cars = []; const pool = [...new Set(crates.slice(2))];
+    for (let k = 0; k < carCount && pool.length; k++) cars.push(pool.splice(Math.floor(rand() * pool.length), 1)[0]);
+    const cap = OPEN_SLOTS - cars.length - 1; // keep one place spare for the player
+    const seq = crates.flatMap(c => [c, c, c]);
+    for (let k = 0, tries = 0; k < cfg.mix && tries < cfg.mix * 40; tries++) {
+      const i = Math.floor(rand() * (seq.length - 1)), j = Math.min(seq.length - 1, i + 1 + Math.floor(rand() * 6));
+      if (seq[i] === seq[j]) continue;
+      [seq[i], seq[j]] = [seq[j], seq[i]];
+      if (simulate(seq, crates, cap) === Infinity) [seq[i], seq[j]] = [seq[j], seq[i]]; else k++;
+    }
+    // pack the fruits tightly from the top (a few holes), then peel them off in a random order
+    // that is always possible: each fruit can reach the top edge once the ones before it are gone
+    const rows = Math.min(FR_MAX, Math.ceil(seq.length / (FC * .88)));
+    const cells = []; for (let r = 0; r < rows; r++) for (let c = 0; c < FC; c++) cells.push(c + ',' + r);
+    const occ = new Set(shuffle(cells, rand).slice(0, seq.length));
+    const gone = new Set(cells.filter(k => !occ.has(k)));
+    const reach = k => { // can the cell k reach the top edge through gone cells?
+      const [c0, r0] = k.split(',').map(Number); if (r0 === 0) return true;
+      const seen = new Set([k]), q = [[c0, r0]];
+      while (q.length) {
+        const [c, r] = q.shift();
+        for (const [dc, dr] of [[0, -1], [-1, 0], [1, 0], [0, 1]]) {
+          const nc = c + dc, nr = r + dr, kk = nc + ',' + nr;
+          if (nc < 0 || nc >= FC || nr < 0 || nr >= rows || seen.has(kk) || !gone.has(kk)) continue;
+          if (nr === 0) return true;
+          seen.add(kk); q.push([nc, nr]);
+        }
+      }
+      return false;
+    };
+    const fruits = [];
+    for (let n = 0; n < seq.length; n++) {
+      const cand = [...occ].filter(reach);
+      // prefer deeper fruits now and then, so the needed colours are buried under others
+      cand.sort((x, y) => +y.split(',')[1] - +x.split(',')[1]);
+      const k = cand[rand() < .4 ? 0 : Math.floor(rand() * cand.length)];
+      occ.delete(k); gone.add(k);
+      const [c, r] = k.split(',').map(Number);
+      fruits.push({ c, r, color: seq[n], hidden: r > 0 && rand() < cfg.hidden });
+    }
+    return { crates, fruits, cars, rows };
   }
 
   // ---------- progress (this browser only) ----------
@@ -507,101 +554,115 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
   }
 
   // ---------- state ----------
-  let S, uid = 0;
+  let S, uid = 0, FR = 7;
+  const QUEUE_T = () => TRACKS.single[0].lanes[1];
+  const DOCK_D = () => QUEUE_T().L - 44;
+  function pathPose(d) {
+    const ln = QUEUE_T(), a = lanePt(ln, d - 2), b = lanePt(ln, d + 2), p = lanePt(ln, d);
+    return { x: p.x, y: p.y, ang: Math.atan2(b.y - a.y, b.x - a.x) };
+  }
+  const cellXY = (c, r) => ({ x: FGX + (c + .5) * FCELL, y: FGY + (r + .5) * FCELL });
   function startLevel(li) {
-    const g = generate(li);
+    const g = generate(li); FR = g.rows; window.__rows = FR;
     const now = performance.now();
     S = {
-      li, paused: false, over: false,
+      li, paused: false, over: false, layout: 'single',
       helpers: { sort: 1 }, used: 0, time: timeFor(li), timeMax: timeFor(li), timeShown: -1,
-      garages: g.garages.map(gr => ({ ...gr, shake: 0, x: GX + ((gr.cells[0][0] + gr.cells[1][0]) / 2 + .5) * CELL, y: GY + ((gr.cells[0][1] + gr.cells[1][1]) / 2 + .5) * CELL })),
-      slots: [...Array.from({ length: 4 }, () => ({ kind: 'open', v: null })), ...Array.from({ length: 3 }, () => ({ kind: 'locked', v: null }))].map((sl, i) => {
+      slots: [...Array.from({ length: OPEN_SLOTS }, () => ({ kind: 'open', f: null })), ...Array.from({ length: PAID_SLOTS }, () => ({ kind: 'locked', f: null }))].map((sl, i) => {
         const ci = g.cars.length === 2 ? [1, 3].indexOf(i) : g.cars.length === 1 ? [2].indexOf(i) : -1;
         if (ci >= 0) sl.car = { color: g.cars[ci], need: 1, leave: 0 };
         return sl;
       }),
-      vans: g.vans.map(v => {
-        const cx = v.cells.reduce((s, [c]) => s + c, 0) / v.len, cy = v.cells.reduce((s, [, r]) => s + r, 0) / v.len;
-        const x = GX + (cx + .5) * CELL, y = GY + (cy + .5) * CELL;
-        return { ...v, id: uid++, state: 'jam', x, y, ang: ANG[v.dir], boarded: 0, reserved: 0, slot: -1, route: null, bump: null, shake: 0, pop: now + Math.random() * 250 };
-      }),
-      layout: g.layout,
-      arms: g.arms.map((cols, ai) => ({ t: TRACKS[g.layout][ai], rows: cols.map((color, i) => ({ color, s: i, n: 3, pop: 0 })) })),
-      ring: LAYOUTS[g.layout].ring ? { slots: Array(RING_K).fill(null), phase: 0 } : null,
-      folk: shuffle([...g.vans.map(v => v.color), ...g.garages.flatMap(gr => gr.queue)], Math.random).map((color, i) => ({ color, side: i % 2, x: folkSpot(i).x, y: folkSpot(i).y, ph: Math.random() * 6, hop: 0 })),
-      jumpers: [],
-      flyers: [], fx: [], lastBoard: 0, lastT: now, toastShown: '', hintFor: '',
+      grid: new Map(g.fruits.map(f => [f.c + ',' + f.r, { ...f, id: uid++, pop: now + Math.random() * 300, shake: 0 }])),
+      crates: g.crates.map((color, i) => ({ id: uid++, color, cap: CRATE_CAP, boarded: 0, reserved: 0, d: DOCK_D() - i * CRATE_GAP - 40, x: 0, y: 0, ang: 0, len: 2 })),
+      closing: [], leaving: [],
+      folk: shuffle([...g.crates], Math.random).map((color, i) => ({ color, side: i % 2, x: folkSpot(i).x, y: folkSpot(i).y, ph: Math.random() * 6, hop: 0 })),
+      jumpers: [], flyers: [], fx: [], lastT: now,
     };
-    if (S.ring) { // start with the loop mostly full, leaving gaps for the arms to pour into
-      let a = 0;
-      for (let j = RING_K - 1; j >= 1; j--) {
-        if (j % 4 === 0) continue;
-        for (let tries = 0; tries < S.arms.length && !S.arms[a].rows.length; tries++) a = (a + 1) % S.arms.length;
-        const arm = S.arms[a]; if (!arm.rows.length) break;
-        const r = arm.rows.shift(); S.ring.slots[j] = { color: r.color, n: 3, pop: 0 };
-        a = (a + 1) % S.arms.length;
-      }
-      S.arms.forEach(arm => arm.rows.forEach((r, i) => { r.s = i; }));
-    }
-    revealFree();
+    S.crates.forEach(c => Object.assign(c, pathPose(Math.max(0, c.d))));
+    revealHidden();
     progress.current = li; saveProgress();
     $('lvl').textContent = 'Уровень ' + (li + 1);
     renderHelpers(); hideOverlay(); hideToast();
+    tutStart();
   }
-
-  function occMap(except) {
-    const m = new Map();
-    for (const v of S.vans) if (v.state === 'jam' && v !== except) for (const [c, r] of v.cells) m.set(c + ',' + r, v);
-    for (const g of S.garages) for (const [c, r] of g.cells) m.set(c + ',' + r, g);
-    return m;
-  }
-  function spawnFromGarages() {
-    const m = occMap(null);
-    for (const g of S.garages) {
-      if (!g.queue.length || g.spawn.some(([c, r]) => m.has(c + ',' + r))) continue;
-      const color = g.queue.shift();
-      const [[c1, r1], [c2, r2]] = g.spawn;
-      const x = GX + ((c1 + c2) / 2 + .5) * CELL, y = GY + ((r1 + r2) / 2 + .5) * CELL;
-      const v = { dir: g.dir, len: 2, cells: g.spawn.map(a => [...a]), cap: 6, color, hidden: false, id: uid++, state: 'jam',
-        x: g.x, y: g.y, ang: ANG[g.dir], boarded: 0, reserved: 0, slot: -1, route: null, bump: null, shake: 0, pop: 0 };
-      S.vans.push(v);
-      startRoute(v, [{ x: g.x, y: g.y }, { x, y }], .25, () => checkEnd());
-      g.shake = performance.now(); sfx('spawn');
+  // shortest walk from a fruit to the top edge through empty cells (null if it is boxed in)
+  function exitPath(f) {
+    const start = f.c + ',' + f.r, prev = new Map([[start, null]]), q = [[f.c, f.r]];
+    while (q.length) {
+      const [c, r] = q.shift();
+      if (r === 0) { const path = []; for (let k = c + ',' + r; k; k = prev.get(k)) path.unshift(k.split(',').map(Number)); return path; }
+      for (const [dc, dr] of [[0, -1], [-1, 0], [1, 0], [0, 1]]) {
+        const nc = c + dc, nr = r + dr, k = nc + ',' + nr;
+        if (nc < 0 || nc >= FC || nr < 0 || nr >= FR || prev.has(k) || S.grid.has(k)) continue;
+        prev.set(k, c + ',' + r); q.push([nc, nr]);
+      }
     }
+    return null;
   }
-  function pathInfo(v) {
-    const m = occMap(v), [dx, dy] = DIRS[v.dir], [fc, fr] = v.cells[0];
-    let gap = 0;
-    for (let x = fc + dx, y = fr + dy; x >= 0 && x < COLS && y >= 0 && y < ROWS; x += dx, y += dy) {
-      const b = m.get(x + ',' + y); if (b) return { clear: false, gap, blocker: b };
-      gap++;
-    }
-    return { clear: true };
-  }
-  function revealFree() {
+  const canGo = f => !!exitPath(f);
+  function revealHidden() {
     const now = performance.now();
-    for (const v of S.vans) if (v.state === 'jam' && v.hidden && pathInfo(v).clear) { v.hidden = false; v.pop = now; }
+    for (const f of S.grid.values()) if (f.hidden && canGo(f)) { f.hidden = false; f.pop = now; }
+  }
+  const current = () => S.crates[0];
+  // where a fruit of this colour would go right now
+  function destFor(color) {
+    const cr = current();
+    if (cr && cr.color === color && cr.boarded + cr.reserved < cr.cap) return { kind: 'crate', crate: cr };
+    const si = S.slots.findIndex(sl => sl.kind === 'open' && !sl.f && !sl.car);
+    return si < 0 ? null : { kind: 'slot', si };
+  }
+  function reserve(dest, f) {
+    if (dest.kind === 'crate') { dest.crate.reserved++; if (dest.crate.boarded + dest.crate.reserved >= dest.crate.cap) closeCrate(dest.crate); }
+    else S.slots[dest.si].f = { ...f, state: 'incoming' };
+  }
+  // the front crate has all its fruits on the way: it stays at the dock until they land,
+  // and the next crate becomes the one being loaded
+  function closeCrate(cr) {
+    S.crates.shift(); S.closing.push(cr);
+    pullWaiting();
+  }
+  // fruits in the waiting area hop into the new crate if they match
+  function pullWaiting() {
+    const cr = current(); if (!cr) return;
+    for (let i = 0; i < S.slots.length; i++) {
+      const sl = S.slots[i];
+      if (!sl.f || sl.f.color !== cr.color || cr.boarded + cr.reserved >= cr.cap) continue;
+      const f = sl.f; sl.f = null; cr.reserved++;
+      const fl = f.state === 'incoming' && S.flyers.find(o => o.dest.kind === 'slot' && o.dest.si === i);
+      if (fl) fl.dest = { kind: 'crate', crate: cr }; // still in the air: change course to the crate
+      else S.flyers.push({ color: f.color, pts: [{ x: slotX(i), y: SLOT_Y }], walk: 0, t0: performance.now(), fly: 420, dest: { kind: 'crate', crate: cr }, spin: 2 });
+      if (cr.boarded + cr.reserved >= cr.cap) { closeCrate(cr); return; }
+    }
+  }
+  // the player taps a fruit in the field
+  function tapFruit(f) {
+    const path = exitPath(f), now = performance.now();
+    if (!path) { f.shake = now; sfx('bump'); return; }
+    const dest = destFor(f.color);
+    if (!dest) { noRoom(f); return; }
+    sfx('tap'); buzz(50);
+    S.grid.delete(f.c + ',' + f.r);
+    reserve(dest, f);
+    const pts = path.map(([c, r]) => cellXY(c, r)); pts.push({ x: pts[pts.length - 1].x, y: FGY - 16 });
+    const lens = []; let walk = 0; for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); lens.push(l); walk += l; }
+    S.flyers.push({ color: f.color, pts, lens, walk: reduce ? 0 : walk / .75, t0: now, fly: reduce ? 80 : 460, dest, spin: (Math.random() < .5 ? -1 : 1) * (2 + Math.random() * 2) });
+    revealHidden();
+  }
+  function noRoom(f) {
+    f.shake = performance.now(); sfx('bump'); buzz([60, 60, 60]);
+    const canBuy = S.slots.some(sl => sl.kind === 'locked') && progress.coins >= PRICE.slot;
+    S.paused = true;
+    const btns = [];
+    if (canBuy) btns.push([`Ещё место за ${PRICE.slot} монет`, () => { S.paused = false; hideOverlay(); openSlot(S.slots.findIndex(sl => sl.kind === 'locked')); tapFruit(f); }]);
+    btns.push(['Попробовать снова', () => startLevel(S.li), canBuy]);
+    if (!canBuy) S.over = true;
+    overlay(`<div class="ov-ico" aria-hidden="true">🧺</div><h2>Зона ожидания переполнена!</h2><p>Этому фрукту некуда встать: все места заняты, а текущему ящику нужен другой цвет.</p>`, btns);
+    sfx('lose');
   }
 
   // ---------- routes ----------
-  function sendToSlot(v, si) {
-    const slot = S.slots[si]; slot.v = v; v.slot = si; v.state = 'moving'; v.hidden = false;
-    const [dx, dy] = DIRS[v.dir], tx = slotX(si);
-    const pts = [{ x: v.x, y: v.y }];
-    let ex = v.x, ey = v.y;
-    if (v.dir === 'U') ey = GY - 14;
-    if (v.dir === 'D') ey = GY + ROWS * CELL + 14;
-    if (v.dir === 'L') ex = GX - 16;
-    if (v.dir === 'R') ex = GX + COLS * CELL + 16;
-    pts.push({ x: ex, y: ey });
-    if (v.dir === 'D') { const side = ex < W / 2 ? GX - 16 : GX + COLS * CELL + 16; pts.push({ x: side, y: ey }); pts.push({ x: side, y: ROAD_Y }); }
-    else if (v.dir !== 'U') pts.push({ x: ex, y: ROAD_Y });
-    else pts.push({ x: ex, y: ROAD_Y });
-    pts.push({ x: tx, y: ROAD_Y });
-    pts.push({ x: tx, y: SLOT_Y });
-    startRoute(v, pts, 1.1, () => { v.state = 'parked'; v.x = tx; v.y = SLOT_Y; v.ang = -Math.PI / 2; afterChange(); });
-    revealFree(); spawnFromGarages(); sfx('go');
-  }
   function startRoute(v, pts, speed, done) {
     const clean = [pts[0]];
     for (const p of pts.slice(1)) { const q = clean[clean.length - 1]; if (Math.hypot(p.x - q.x, p.y - q.y) > .5) clean.push(p); }
@@ -618,7 +679,7 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
         v.x = a.x + (b.x - a.x) * t; v.y = a.y + (b.y - a.y) * t;
         const target = Math.atan2(b.y - a.y, b.x - a.x);
         let diff = target - v.ang; while (diff > Math.PI) diff -= 2 * Math.PI; while (diff < -Math.PI) diff += 2 * Math.PI;
-        v.ang += diff * (R.fly ? .12 : .35);
+        v.ang += diff * .25;
         return;
       }
       d -= R.lens[i];
@@ -698,8 +759,11 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
       return e < 1;
     });
   }
-  function leave(v) {
-    v.state = 'leaving'; sfx('leave'); buzz([20, 40, 30]); burst(v.x, v.y, v.color);
+  // a full crate drives off; a farmer of its colour jumps in as the driver
+  function depart(v) {
+    if (S.tut) setTimeout(() => tutPhase('c'), 700);
+    S.closing = S.closing.filter(c => c !== v); S.leaving.push(v);
+    sfx('leave'); buzz([20, 40, 30]); burst(v.x, v.y, v.color);
     const fi = S.folk.findIndex(f => f.color === v.color);
     if (fi >= 0) {
       const [f] = S.folk.splice(fi, 1);
@@ -710,205 +774,108 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
       if (!sl.car || sl.car.color !== v.color || sl.car.leave) return;
       if (--sl.car.need <= 0) setTimeout(() => { sl.car.leave = performance.now(); sfx('go'); }, 350);
     });
-    startRoute(v, [{ x: v.x, y: v.y }, { x: v.x, y: ROAD_Y }, { x: W + 60, y: ROAD_Y }], 1.0, () => {
-      v.state = 'gone'; S.slots[v.slot].v = null; afterChange();
+    startRoute(v, [{ x: v.x, y: v.y }, { x: v.x + 50, y: v.y - 40 }, { x: W + 70, y: v.y - 80 }], .9, () => {
+      S.leaving = S.leaving.filter(c => c !== v); checkEnd();
     });
   }
 
   // ---------- input ----------
   cv.addEventListener('pointerdown', e => {
-    if (!S || S.over || S.paused) return;
+    if (!S || S.over || S.paused || (S.tut && S.tut.open)) return;
     const r = cv.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width * W, y = (e.clientY - r.top) / r.height * H;
-    // parked cars explain themselves
     for (let i = 0; i < S.slots.length; i++) {
-      const c = S.slots[i].car;
-      if (c && !c.leave && Math.abs(x - slotX(i)) < SLOT_W / 2 + 3 && Math.abs(y - SLOT_Y) < SLOT_H / 2 + 3) {
-        S.slots[i].shake = performance.now(); sfx('bump');
-        toast(`Эта машина заняла место. Она уедет, когда заполнится ящик для ${PAL[c.color].of}.`); return;
-      }
+      const sl = S.slots[i], inSlot = Math.abs(x - slotX(i)) < SLOT_W / 2 + 3 && Math.abs(y - SLOT_Y) < SLOT_H / 2 + 3;
+      if (!inSlot) continue;
+      if (sl.car && !sl.car.leave) { sl.shake = performance.now(); sfx('bump'); toast(`Эта машина заняла место. Она уедет, когда заполнится ящик для ${PAL[sl.car.color].of}.`); return; }
+      if (sl.kind === 'locked') { sl.press = performance.now(); openSlot(i); return; }
+      if (sl.f) { toast('Этот фрукт ждёт ящик своего цвета и сам в него запрыгнет.'); return; }
     }
-    // locked "+" slots
-    for (let i = 0; i < S.slots.length; i++) {
-      if (S.slots[i].kind === 'locked' && Math.abs(x - slotX(i)) < SLOT_W / 2 + 3 && Math.abs(y - SLOT_Y) < SLOT_H / 2 + 3) {
-        S.slots[i].press = performance.now(); openSlot(i); return;
-      }
-    }
-    const gHit = S.garages.find(g => g.cells.some(([c, rr]) => x >= GX + c * CELL && x < GX + (c + 1) * CELL && y >= GY + rr * CELL && y < GY + (rr + 1) * CELL));
-    if (gHit) { gHit.shake = performance.now(); toast(gHit.queue.length ? `Это гараж. Внутри ещё ${gHit.queue.length} ящ., новый выедет, когда впереди освободится место.` : 'Гараж пуст.'); return; }
-    const hit = S.vans.find(v => v.state === 'jam' && v.cells.some(([c, rr]) => x >= GX + c * CELL && x < GX + (c + 1) * CELL && y >= GY + rr * CELL && y < GY + (rr + 1) * CELL));
-    if (hit) tapVan(hit);
+    const c = Math.floor((x - FGX) / FCELL), rr2 = Math.floor((y - FGY) / FCELL);
+    const f = S.grid.get(c + ',' + rr2);
+    if (f) tapFruit(f);
   });
-
-  function tapVan(v) {
-    if (v.route || v.bump) return;
-    sfx('tap'); buzz(50);
-    const p = pathInfo(v);
-    if (!p.clear) {
-      v.bump = { t0: performance.now(), d: Math.max(5, p.gap * CELL + 4) };
-      p.blocker.shake = performance.now(); sfx('bump');
-      return;
-    }
-    const si = S.slots.findIndex(s => s.kind === 'open' && !s.v && !s.car);
-    if (si < 0) { toast(`Парковка заполнена. Подождите, пока уедет ящик, или откройте место «+» за ${PRICE.slot} монет.`); return; }
-    sendToSlot(v, si);
-  }
 
   // ---------- helpers ----------
   function renderHelpers() {
     $('sortCount').textContent = S.helpers.sort; $('sortBtn').disabled = S.helpers.sort <= 0;
     $('vipBtn').disabled = !S.slots.some(sl => sl.kind === 'locked');
   }
-  // VIP: buy one more parking place (the next "+" spot)
+  // VIP: buy one more waiting place (the next "+" spot)
   function openSlot(i) {
     if (S.over) return;
-    if (i < 0) { toast('Все места на парковке уже открыты.'); return; }
+    if (i < 0) { toast('Все места уже открыты.'); return; }
     if (!pay(PRICE.slot)) return;
     S.slots[i].kind = 'open'; S.slots[i].pop = performance.now(); S.used++; sfx('magic');
     burst(slotX(i), SLOT_Y, 'yellow', true);
-    toast(`Открыто новое место на парковке. Списано ${PRICE.slot} монет.`);
+    toast(`Открыто новое место в зоне ожидания. Списано ${PRICE.slot} монет.`);
     renderHelpers(); afterChange();
   }
   $('vipBtn').addEventListener('click', () => openSlot(S.slots.findIndex(sl => sl.kind === 'locked')));
+  // Magnet: pulls the fruits the current crate still needs straight out of the field, even locked ones
   $('sortBtn').addEventListener('click', () => {
-    if (S.over || S.helpers.sort <= 0 || totalRows() < 2) return;
-    const want = S.slots.map(s => s.v).filter(v => v && v.state === 'parked' && v.boarded + v.reserved < v.cap).map(v => v.color);
-    if (!want.length) { toast('Сначала поставьте ящик на парковку, тогда его фрукты выйдут вперёд.'); return; }
+    const cr = current();
+    if (S.over || S.helpers.sort <= 0 || !cr) return;
+    const need = cr.cap - cr.boarded - cr.reserved;
+    const pick = [...S.grid.values()].filter(f => f.color === cr.color).sort((a, b) => a.r - b.r).slice(0, need);
+    if (!pick.length) { toast('Нужных фруктов в поле уже нет, они ждут в зоне ожидания или летят.'); return; }
     S.helpers.sort--; S.used++; renderHelpers(); sfx('magic');
-    const rank = r => { const i = want.indexOf(r.color); return i < 0 ? 99 : i; };
-    const stable = list => list.map((r, i) => ({ r, i })).sort((a, b) => rank(a.r) - rank(b.r) || a.i - b.i).map(o => o.r);
     const now = performance.now();
-    S.arms.forEach(arm => {
-      if (arm.rows.length < 2) return;
-      arm.rows = [arm.rows[0], ...stable(arm.rows.slice(1))];
-      arm.rows.forEach((r, i) => { r.s = i; r.pop = reduce ? 0 : now + i * 15; });
+    pick.forEach((f, k) => {
+      S.grid.delete(f.c + ',' + f.r); cr.reserved++;
+      S.flyers.push({ color: f.color, pts: [cellXY(f.c, f.r)], walk: 0, t0: now + k * 90, fly: 520, dest: { kind: 'crate', crate: cr }, spin: 3 });
     });
-    if (S.ring) {
-      const R = S.ring, byArrival = R.slots.map((r, j) => ({ r, j })).filter(o => o.r).sort((a, b) => toGate(a.j) - toGate(b.j));
-      const sorted = stable(byArrival.map(o => o.r));
-      byArrival.forEach((o, k) => { R.slots[o.j] = sorted[k]; sorted[k].pop = reduce ? 0 : now + k * 15; });
-    }
-    toast('Фрукты для ящиков на парковке перешли в начало очереди.');
+    if (cr.boarded + cr.reserved >= cr.cap) closeCrate(cr);
+    revealHidden();
+    toast(`Магнит притянул ${pick.length} фрукт(а) прямо в ящик.`);
   });
-  // Shuffle the fruit colours on the track. Rows only swap colours with rows holding
-  // the same number of fruits, so every colour keeps exactly as many fruits as before.
+  // Shuffle the fruit colours in the field (counts per colour stay the same)
   $('shuffleBtn').addEventListener('click', () => {
     if (S.over) return;
-    const rows = [...S.arms.flatMap(a => a.rows), ...(S.ring ? S.ring.slots.filter(Boolean) : [])].filter(r => r.n > 0);
-    if (new Set(rows.map(r => r.color)).size < 2) { toast('На дорожке остались фрукты одного цвета, перемешивать нечего.'); return; }
+    const fs = [...S.grid.values()];
+    if (new Set(fs.map(f => f.color)).size < 2) { toast('В поле остались фрукты одного цвета, перемешивать нечего.'); return; }
     if (!pay(PRICE.shuffle)) return;
     S.used++; sfx('magic');
-    for (const n of [1, 2, 3]) {
-      const group = rows.filter(r => r.n === n), cols = shuffle(group.map(r => r.color), Math.random);
-      group.forEach((r, i) => { r.color = cols[i]; });
-    }
-    const now = performance.now();
-    rows.forEach((r, i) => { r.pop = reduce ? 0 : now + Math.min(i, 40) * 8; });
-    S.hintFor = '';
-    toast(`Фрукты на дорожке перемешались. Списано ${PRICE.shuffle} монет.`);
-    afterChange();
+    const cols = shuffle(fs.map(f => f.color), Math.random), now = performance.now();
+    fs.forEach((f, i) => { f.color = cols[i]; f.pop = reduce ? 0 : now + Math.min(i, 40) * 8; });
+    toast(`Фрукты в поле перемешались. Списано ${PRICE.shuffle} монет.`);
   });
   $('restartBtn').addEventListener('click', () => startLevel(S.li));
   $('soundBtn').addEventListener('click', toggleSound);
   $('pauseBtn').addEventListener('click', () => { if (!S.over) showRules(); });
 
   // ---------- rules of the round ----------
-  function afterChange() { revealFree(); spawnFromGarages(); checkEnd(); }
-  function busy() { return S.flyers.length > 0 || S.vans.some(v => v.route || v.bump) || S.slots.some(s => s.car && s.car.leave); }
-  function totalRows() { return S.arms.reduce((n, a) => n + a.rows.length, 0) + (S.ring ? S.ring.slots.filter(Boolean).length : 0); }
-  // Colours that can reach the gate without the player doing anything.
-  function gateColors() {
-    const set = new Set();
-    const heads = () => S.arms.forEach(a => a.rows[0] && set.add(a.rows[0].color));
-    if (S.ring) { S.ring.slots.forEach(r => r && set.add(r.color)); if (S.ring.slots.some(r => !r)) heads(); }
-    else heads();
-    return [...set];
-  }
+  function afterChange() { revealHidden(); pullWaiting(); checkEnd(); }
   function checkEnd() {
     if (S.over) return;
-    if (!totalRows()) {
-      if (!S.flyers.length) { S.over = true; setTimeout(win, 900); }
-      return;
-    }
-    if (busy()) return;
-    const cols = gateColors();
-    const canBoard = S.slots.some(s => s.v && s.v.state === 'parked' && cols.includes(s.v.color) && s.v.boarded + s.v.reserved < s.v.cap);
-    if (canBoard) return;
-    const freeOpen = S.slots.some(s => s.kind === 'open' && !s.v && !s.car);
-    const visible = c => S.vans.some(v => v.color === c && !v.hidden && (v.state === 'jam' || v.state === 'parked'));
-    const key = cols.join();
-    if (!cols.some(visible) && S.hintFor !== key) {
-      S.hintFor = key;
-      const c = cols[0];
-      const inGarage = S.garages.some(g => g.queue.includes(c));
-      const hidden = S.vans.some(v => v.color === c && v.hidden && v.state === 'jam');
-      if (hidden || inGarage) toast(hidden
-        ? `Ящик для ${PAL[c].of} спрятан под знаком «?». Освободите ему дорогу, и он покажет свой цвет.`
-        : `Ящики для ${PAL[c].of} ждут в гараже. Освободите место перед гаражом, и они выедут.`);
-    }
-    if (freeOpen) return;
-    const canBuySlot = S.slots.some(sl => sl.kind === 'locked') && progress.coins >= PRICE.slot;
-    const canShuffle = progress.coins >= PRICE.shuffle;
-    if (canBuySlot || canShuffle) {
-      toast(canBuySlot ? `Парковка заполнена! Откройте место кнопкой VIP за ${PRICE.slot} монет или перемешайте фрукты.` : `Парковка заполнена! Перемешайте фрукты за ${PRICE.shuffle} монет.`);
-      return;
-    }
-    S.over = true; setTimeout(lose, 500);
+    if (!S.crates.length && !S.closing.length && !S.leaving.length && !S.flyers.length) { S.over = true; setTimeout(win, 700); }
   }
 
   // ---------- frame ----------
-  const armDist = (arm, row, lane) => arm.t.lanes[lane].L - arm.t.stop - row.s * ROWGAP;
-  const armRowPos = (arm, row, lane) => lanePt(arm.t.lanes[lane], armDist(arm, row, lane));
-  const slotFrac = j => ((j / RING_K + S.ring.phase) % 1 + 1) % 1;
-  const toGate = j => 1 - slotFrac(j);
-  const slotAt = f => ((Math.round((f - S.ring.phase) * RING_K) % RING_K) + RING_K) % RING_K;
-  const ringRowPos = (j, lane) => lanePt(RING_T.lanes[lane], slotFrac(j) * RING_T.lanes[lane].L);
-
   function update(now) {
-    const dt = Math.min(.1, (now - S.lastT) / 1000); S.lastT = now;
-    // arms slide forward
-    for (const arm of S.arms) arm.rows.forEach((r, i) => { r.s += (i - r.s) * (reduce ? 1 : .2); if (Math.abs(r.s - i) < .003) r.s = i; });
-    // the loop turns and the arms pour into its empty places
-    if (S.ring && !S.paused) {
-      const R = S.ring;
-      R.phase = (R.phase + dt * RING_SPEED / RING_K) % 1;
-      let fed = false;
-      for (const arm of S.arms) {
-        const head = arm.rows[0]; if (!head || head.s > .3) continue;
-        const j = slotAt(arm.t.entry);
-        if (!R.slots[j]) {
-          const from = [0, 1, 2].map(l => armRowPos(arm, head, l));
-          R.slots[j] = { color: head.color, n: head.n, pop: 0, enter: { t0: now, from } };
-          arm.rows.shift(); fed = true;
-        }
+    S.lastT = now;
+    // the crate queue rolls along the road; the front one stops at the dock
+    const dock = DOCK_D(), dockBusy = S.closing.length > 0;
+    S.crates.forEach((c, i) => {
+      const target = dock - (i + (dockBusy ? 1 : 0)) * CRATE_GAP;
+      c.d += Math.sign(target - c.d) * Math.min(Math.abs(target - c.d), reduce ? 999 : 4.5);
+      Object.assign(c, pathPose(Math.max(0, c.d)));
+    });
+    // flying fruits: walk out of the field, then hop into a crate or onto a waiting place
+    S.flyers = S.flyers.filter(fl => {
+      const t = now - fl.t0;
+      if (t < fl.walk + fl.fly) return true;
+      if (fl.dest.kind === 'crate') {
+        const cr = fl.dest.crate; cr.reserved--; cr.boarded++; cr.squash = now; sfx('pop'); if (S.tut) { S.tutCrate = S.tutCrate || cr; tutPhase('b'); }
+        if (cr.boarded >= cr.cap && S.closing.includes(cr)) setTimeout(() => depart(cr), 180);
+      } else {
+        const sl = S.slots[fl.dest.si]; if (sl.f) { sl.f.state = 'waiting'; sl.f.pop = now; } sfx('pop');
+        pullWaiting();
       }
-      if (fed) checkEnd();
-    }
-    // boarding at the gate
-    if (!S.paused && now - S.lastBoard > 85) {
-      const gate = [];
-      if (S.ring) { const j = slotAt(0); if (S.ring.slots[j]) gate.push({ row: S.ring.slots[j], j }); }
-      else S.arms.forEach(arm => { if (arm.rows[0] && arm.rows[0].s < .2) gate.push({ row: arm.rows[0], arm }); });
-      if (gate.length > 1 && (S.boardTurn = (S.boardTurn || 0) + 1) % 2) gate.reverse();
-      for (const gr of gate) {
-        const row = gr.row;
-        const v = S.slots.map(s => s.v).find(v => v && v.state === 'parked' && v.color === row.color && v.boarded + v.reserved < v.cap);
-        if (!v) continue;
-        const lane = row.n - 1, from = gr.arm ? armRowPos(gr.arm, row, lane) : ringRowPos(gr.j, lane);
-        row.n--; v.reserved++; S.lastBoard = now;
-        S.flyers.push({ color: row.color, x0: from.x, y0: from.y, v, t0: now, dur: reduce ? 80 : 430, spin: (Math.random() < .5 ? -1 : 1) * (2 + Math.random() * 2) });
-        if (row.n === 0) { if (gr.arm) gr.arm.rows.shift(); else S.ring.slots[gr.j] = null; }
-        break;
-      }
-    }
-    // flyers
-    S.flyers = S.flyers.filter(f => {
-      if (now - f.t0 < f.dur) return true;
-      f.v.reserved--; f.v.boarded++; f.v.squash = now; sfx('pop');
-      if (f.v.boarded >= f.v.cap) setTimeout(() => leave(f.v), 160);
       checkEnd();
       return false;
     });
+    for (const v of S.leaving) if (v.route) stepRoute(v, now);
     for (const sl of S.slots) if (sl.car && sl.car.leave && now - sl.car.leave > 900) { sl.car = null; afterChange(); }
     // confetti
     const fdt = Math.min(.05, (now - (S.fxT || now)) / 1000); S.fxT = now;
@@ -916,11 +883,22 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
       if (p.kind === 'conf') { p.vy += 520 * fdt; p.vx *= 1 - 1.6 * fdt; p.vy *= 1 - .8 * fdt; p.x += p.vx * fdt; p.y += p.vy * fdt; p.rot += p.vr * fdt; }
       return now - p.t0 < p.dur;
     });
-    // vans
-    for (const v of S.vans) {
-      if (v.route) stepRoute(v, now);
-      if (v.bump && now - v.bump.t0 > 420) { v.bump = null; checkEnd(); }
+  }
+  // where a flying fruit is at this moment
+  function flyerPos(fl, now) {
+    const t = now - fl.t0;
+    if (t < 0) return { ...fl.pts[0], s: 1, rot: 0 };
+    if (t < fl.walk) {
+      let d = t / fl.walk * fl.lens.reduce((a, b) => a + b, 0);
+      for (let i = 0; i < fl.lens.length; i++) {
+        if (d <= fl.lens[i]) { const a = fl.pts[i], b = fl.pts[i + 1], k = d / fl.lens[i]; return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k - Math.abs(Math.sin(d / 9)) * 4, s: 1, rot: 0 }; }
+        d -= fl.lens[i];
+      }
     }
+    const from = fl.pts[fl.pts.length - 1], e = Math.min(1, (t - fl.walk) / fl.fly), k = e * e * (3 - 2 * e);
+    const to = fl.dest.kind === 'crate' ? { x: fl.dest.crate.x, y: fl.dest.crate.y } : { x: slotX(fl.dest.si), y: SLOT_Y };
+    const lift = 30 + Math.hypot(to.x - from.x, to.y - from.y) * .3;
+    return { x: from.x + (to.x - from.x) * k, y: from.y + (to.y - from.y) * k - Math.sin(e * Math.PI) * lift, s: 1 + .3 * Math.sin(e * Math.PI) - .25 * e, rot: fl.spin * e };
   }
 
   // ---------- drawing ----------
@@ -1028,53 +1006,9 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
   function drawScene(now) {
     drawBackground();
     drawSky(now);
-    const lay = LAYOUTS[S.layout], tracks = TRACKS[S.layout];
-    // fruits (back rows first so the front sits on top)
-    const bob = reduce ? 0 : now / 180;
-    const drawRow = (row, i, at) => {
-      let k = 1; if (row.pop) { const e = (now - row.pop) / 300; if (e < 0) k = 0; else if (e < 1) k = .4 + .6 * e; else row.pop = 0; }
-      for (let lane = 0; lane < row.n; lane++) {
-        const p = at(lane), s2 = FRUIT_PX * k, dy = Math.sin(bob + i * .7 + lane) * .8;
-        if (IMG[row.color].complete) ctx.drawImage(IMG[row.color], p.x - s2 / 2, p.y - s2 / 2 + dy, s2, s2);
-      }
-    };
-    for (const arm of S.arms) for (let i = arm.rows.length - 1; i >= 0; i--) {
-      const row = arm.rows[i]; if (armDist(arm, row, 1) < 0) continue;
-      drawRow(row, i, lane => armRowPos(arm, row, lane));
-    }
-    if (S.ring) S.ring.slots.forEach((row, j) => {
-      if (!row) return;
-      let e = 1; if (row.enter) { e = Math.min(1, (now - row.enter.t0) / 260); if (e >= 1) row.enter = null; }
-      drawRow(row, j, lane => {
-        const p = ringRowPos(j, lane); if (e >= 1) return p;
-        const f = row.enter.from[lane], k = e * e * (3 - 2 * e);
-        return { x: f.x + (p.x - f.x) * k, y: f.y + (p.y - f.y) * k };
-      });
-    });
-    // glass feeding tubes where the arms come in, fruits stay visible inside
-    for (const t of tracks) {
-      const [a, b] = t.tube; if (b - a < 10) continue;
-      const pts = []; for (let i = a; i <= b; i += 2) pts.push([t.X[i], t.Y[i]]);
-      ctx.lineCap = 'butt'; ctx.lineJoin = 'round';
-      ctx.beginPath(); pts.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
-      ctx.strokeStyle = 'rgba(190,225,255,.35)'; ctx.lineWidth = ROAD + 8; ctx.stroke();
-      for (const side of [-1, 1]) {
-        const lane = side < 0 ? t.lanes[0] : t.lanes[2];
-        ctx.beginPath();
-        for (let i = a; i <= b; i += 2) {
-          const i1 = Math.min(t.X.length - 1, i + 1), tx = t.X[i1] - t.X[i - (i > 0 ? 1 : 0)], ty = t.Y[i1] - t.Y[i - (i > 0 ? 1 : 0)], l = Math.hypot(tx, ty) || 1;
-          const off = side * (ROAD / 2 + 4), x = t.X[i] - ty / l * off, y = t.Y[i] + tx / l * off;
-          i === a ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = 'rgba(120,160,200,.9)'; ctx.lineWidth = 4; ctx.stroke();
-        ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 1.5; ctx.stroke();
-      }
-      // rim at the mouth of the tube
-      const tx = t.X[b + 1] - t.X[b - 1], ty = t.Y[b + 1] - t.Y[b - 1], l = Math.hypot(tx, ty) || 1, nx = -ty / l, ny = tx / l, h = ROAD / 2 + 9;
-      ctx.beginPath(); ctx.moveTo(t.X[b] - nx * h, t.Y[b] - ny * h); ctx.lineTo(t.X[b] + nx * h, t.Y[b] + ny * h);
-      ctx.strokeStyle = '#6f9cc6'; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.stroke();
-      ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 2; ctx.stroke(); ctx.lineCap = 'butt';
-    }
+    // the crate queue on the road (back ones first), and a crate at the dock being closed
+    for (let i = S.crates.length - 1; i >= 0; i--) if (S.crates[i].d > 0) drawCrateAt(S.crates[i], now, i === 0);
+    for (const c of S.closing) drawCrateAt(c, now, true);
     drawFolk(now);
     drawRain(now);
     // parking strip
@@ -1096,23 +1030,21 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
       if (s.kind === 'vip' && !s.v) { ctx.save(); ctx.translate(slotX(i), SLOT_Y); ctx.rotate(Math.PI / 2); ctx.fillStyle = '#ffb020'; ctx.font = '15px "Russo One", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('VIP', 0, 0); ctx.restore(); }
     });
     S.slots.forEach((sl, i) => sl.car && drawCar(sl, i, now));
-    // jam floor
-    ctx.fillStyle = '#e2e6f3'; ctx.fillRect(0, GY - 14, W, H - GY + 14);
-    ctx.fillStyle = '#d3d8ea';
-    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (inMask(c, r)) { rr(GX + c * CELL + 2, GY + r * CELL + 2, CELL - 4, CELL - 4, 6); ctx.fill(); }
-
-    for (const g of S.garages) drawGarage(g, now);
-    // vans: jam first, then parked, then moving on top
-    const order = S.vans.filter(v => v.state !== 'gone').sort((a, b) => (rank(a) - rank(b)) || a.y - b.y);
-    for (const v of order) drawVan(v, now);
+    // waiting fruits sit on their places
+    S.slots.forEach((sl, i) => {
+      if (!sl.f || sl.f.state !== 'waiting' || !IMG[sl.f.color].complete) return;
+      let k = 1; if (sl.f.pop) { const e = (now - sl.f.pop) / 260; if (e < 1) k = 1 + Math.sin(e * Math.PI) * .25; else sl.f.pop = 0; }
+      const s = 32 * k, bob = reduce ? 0 : Math.sin(now / 300 + i) * 1.2;
+      ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(slotX(i) + 2, SLOT_Y + 15, 13, 4, 0, 0, 7); ctx.fill();
+      ctx.drawImage(IMG[sl.f.color], slotX(i) - s / 2, SLOT_Y - s / 2 + bob, s, s);
+    });
+    drawField2(now);
+    for (const c of S.leaving) drawCrateAt(c, now, false);
     // flying fruits
-    for (const f of S.flyers) {
-      const t = Math.min(1, (now - f.t0) / f.dur), e = t * t * (3 - 2 * t);
-      const dist = Math.hypot(f.v.x - f.x0, f.v.y - f.y0), lift = 30 + dist * .35;
-      const x = f.x0 + (f.v.x - f.x0) * e, y = f.y0 + (f.v.y - f.y0) * e - Math.sin(t * Math.PI) * lift;
-      const s = FRUIT_PX * (1 + .35 * Math.sin(t * Math.PI) - .3 * t);
-      if (!IMG[f.color].complete) continue;
-      ctx.save(); ctx.translate(x, y); ctx.rotate(f.spin * t); ctx.drawImage(IMG[f.color], -s / 2, -s / 2, s, s); ctx.restore();
+    for (const fl of S.flyers) {
+      if (!IMG[fl.color].complete) continue;
+      const p = flyerPos(fl, now), s = FRUIT_GRID * p.s;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.drawImage(IMG[fl.color], -s / 2, -s / 2, s, s); ctx.restore();
     }
     drawJumpers(now);
     for (const p of S.fx) {
@@ -1133,6 +1065,55 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
     }
   }
   let ASPH = null;
+  function drawCrateAt(c, now, front) {
+    let k = 1; if (c.squash) { const e = (now - c.squash) / 220; if (e < 1) k = 1 + Math.sin(e * Math.PI) * .1; else c.squash = 0; }
+    ctx.save(); ctx.translate(c.x, c.y); ctx.scale(k, k); ctx.rotate(c.ang);
+    drawCrate(c, 50, 30, PAL[c.color], true);
+    ctx.restore();
+    if (front && !c.route) { // a small sign at the dock: "loading"
+      const bx = c.x + 30, by = c.y - 4;
+      ctx.fillStyle = 'rgba(29,35,64,.8)'; rr(bx - 2, by - 9, 26, 18, 6); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.font = '11px "Russo One", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(`${c.boarded}/${c.cap}`, bx + 11, by + 1);
+    }
+  }
+  // the field of fruits: a wooden board with cells; fruits that can walk out glow softly
+  function drawField2(now) {
+    const x0 = FGX - 8, y0 = FGY - 8, w = FC * FCELL + 16, h = FR * FCELL + 16;
+    ctx.fillStyle = '#e2e6f3'; ctx.fillRect(0, GY - 14, W, H - GY + 14);
+    ctx.fillStyle = 'rgba(40,30,10,.25)'; rr(x0 + 2, y0 + 5, w, h, 14); ctx.fill();
+    const bg = ctx.createLinearGradient(0, y0, 0, y0 + h); bg.addColorStop(0, '#d39a5a'); bg.addColorStop(1, '#a96a32');
+    ctx.fillStyle = bg; rr(x0, y0, w, h, 14); ctx.fill(); ctx.strokeStyle = '#6e4119'; ctx.lineWidth = 2; ctx.stroke();
+    // exit along the top edge
+    ctx.fillStyle = '#efd9a6'; rr(FGX, y0 - 4, FC * FCELL, 8, 4); ctx.fill();
+    ctx.fillStyle = 'rgba(110,65,25,.6)';
+    for (let c = 0; c < FC; c++) { const ax = FGX + (c + .5) * FCELL; ctx.beginPath(); ctx.moveTo(ax, y0 - 4); ctx.lineTo(ax - 4, y0 + 1); ctx.lineTo(ax + 4, y0 + 1); ctx.fill(); }
+    for (let r = 0; r < FR; r++) for (let c = 0; c < FC; c++) {
+      const x = FGX + c * FCELL, y = FGY + r * FCELL;
+      const cg = ctx.createLinearGradient(0, y, 0, y + FCELL); cg.addColorStop(0, '#5a3614'); cg.addColorStop(.3, '#7a4a1c'); cg.addColorStop(1, '#8e5a26');
+      ctx.fillStyle = cg; rr(x + 2, y + 2, FCELL - 4, FCELL - 4, 7); ctx.fill();
+    }
+    const t = reduce ? 0 : now / 1000;
+    for (const f of S.grid.values()) {
+      const p = cellXY(f.c, f.r); let x = p.x, y = p.y;
+      if (f.shake && now - f.shake < 300) { const e = (now - f.shake) / 300; x += Math.sin(e * 40) * 3 * (1 - e); } else f.shake = 0;
+      let k = 1; if (f.pop) { const e = (now - f.pop) / 300; if (e < 0) k = 0; else if (e < 1) k = .5 + .5 * e + Math.sin(e * Math.PI) * .15; else f.pop = 0; }
+      const free = canGo(f), s = FRUIT_GRID * k;
+      if (free) { // soft glow + a little idle hop for fruits that can go
+        const g = ctx.createRadialGradient(x, y, 4, x, y, 19); g.addColorStop(0, 'rgba(255,250,200,.55)'); g.addColorStop(1, 'rgba(255,250,200,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 19, 0, 7); ctx.fill();
+        y -= Math.abs(Math.sin(t * 2.4 + f.id)) * 1.5;
+      }
+      if (f.hidden) {
+        ctx.fillStyle = '#5c6178'; ctx.beginPath(); ctx.arc(x, y, s * .42, 0, 7); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.beginPath(); ctx.arc(x - 3, y - 4, s * .15, 0, 7); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.font = '15px "Russo One", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('?', x, y + 1);
+      } else if (IMG[f.color].complete) {
+        ctx.drawImage(IMG[f.color], x - s / 2, y - s / 2, s, s);
+        if (!free) { ctx.fillStyle = 'rgba(30,15,0,.28)'; ctx.beginPath(); ctx.arc(x, y + 1, s * .45, 0, 7); ctx.fill(); }
+      }
+    }
+  }
   // a chunky game button: green body, darker base that shows its height, gloss, coin price tag
   function drawBuyButton(i, x, y, now) {
     const s = S.slots[i], pressed = s.press && now - s.press < 160, d = pressed ? 1 : 5, dy = pressed ? 4 : 0;
@@ -1426,8 +1407,92 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
     ctx.restore();
   }
 
+  // ---------- tutorial (level 1, only the very first time) ----------
+  // Short messages in three parts: at the start, after the first fruit lands in a crate,
+  // and after the first crate drives away. Each message has a button; while one is open the
+  // game is dimmed, taps on the field are blocked and the rain clock waits.
+  const TUT = {
+    a: [
+      { who: '👋', text: 'Привет! Помоги фермеру отправить <b>урожай</b>.' },
+      { who: '📦', text: 'Это <b>ящик</b>. Ему нужны фрукты <b>его цвета</b>.', at: 'crate' },
+      { who: '✨', text: '<b>Светлые</b> фрукты можно брать. Тёмные пока заперты.', at: 'fruit' },
+      { who: '👇', text: 'Нажми на этот фрукт!', at: 'fruit', btn: 'Понятно', then: 'fruit' },
+    ],
+    b: [
+      { who: '👍', text: 'Отлично! Фрукт уже <b>в ящике</b>.', at: 'crate' },
+      { who: '🅿️', text: 'Фрукт <b>другого цвета</b> ждёт здесь, на парковке.', at: 'park', low: true },
+      { who: '⚠️', text: 'Мест мало! Займёшь все, и уровень <b>проигран</b>.', at: 'park', low: true, btn: 'Понятно' },
+    ],
+    c: [
+      { who: '🚚', text: 'Ящик полный и уехал! Едет <b>следующий</b>.', at: 'crate' },
+      { who: '🎯', text: 'Убери <b>все фрукты</b> с поля, и уровень пройден!', at: 'field' },
+      { who: '🏆', text: '<b>Молодец!</b> Ты всё понял. Вперёд!', btn: 'Играть!', praise: true },
+    ],
+  };
+  function tutStart() {
+    S.tut = 0; tutHide();
+    if (S.li !== 0 || progress.tutorialDone) return;
+    // remembered right away, so a restart of level 1 goes straight to the game
+    progress.tutorialDone = true; saveProgress();
+    S.tut = { open: false, seen: {}, queue: [], msg: null, point: null };
+    tutPhase('a');
+  }
+  function tutPhase(name) {
+    const T = S.tut; if (!T || T.seen[name]) return;
+    T.seen[name] = true;
+    if (T.open) { T.queue.push(name); return; }
+    tutShow(name, 0);
+  }
+  function tutShow(name, i) {
+    const T = S.tut, m = TUT[name][i], tip = $('tip');
+    T.open = true; T.msg = m; T.point = m.at || null;
+    const all = Object.values(TUT).flat(), n = all.indexOf(m) + 1;
+    // the bubble stays centred, but steps away from what it points at so that stays visible
+    const place = m.at === 'crate' || m.at === 'park' ? ' low' : m.at === 'fruit' || m.at === 'field' ? ' high' : '';
+    tip.className = 'tip' + place + (m.praise ? ' praise' : '');
+    tip.innerHTML = `${m.praise ? '' : `<span class="tip-step">ОБУЧЕНИЕ · ${n} / ${all.length - 1}</span>`}<span class="tip-who" aria-hidden="true">${m.who}</span>${m.text}`;
+    const b = document.createElement('button'); b.className = 'ov-btn'; b.textContent = m.btn || 'Далее';
+    b.onclick = () => {
+      if (i + 1 < TUT[name].length) { tutShow(name, i + 1); return; }
+      T.open = false; T.point = m.then || null; tip.hidden = true;
+      if (T.queue.length) { tutShow(T.queue.shift(), 0); return; }
+      if (name === 'c') { S.tut = 0; tutHide(); S.lastT = performance.now(); }
+      $('helpers').classList.remove('locked');
+    };
+    tip.appendChild(b);
+    tip.hidden = false; tip.style.animation = 'none'; void tip.offsetWidth; tip.style.animation = '';
+    $('tutDim').hidden = false; $('helpers').classList.add('locked');
+    if (m.praise) { burst(200, 300, 'yellow'); sfx('win'); } else sfx('pop');
+    b.focus({ preventScroll: true });
+  }
+  function tutHide() { $('tip').hidden = true; $('tutDim').hidden = true; $('tutHand').hidden = true; $('helpers').classList.remove('locked'); }
+  // where the spotlight and the pointing hand go, in game units: [x, y, half-width, half-height]
+  function tutTarget(kind) {
+    if (kind === 'crate') { const c = S.tut.point === 'crate' && S.tutCrate && !S.tut.seen.c ? S.tutCrate : current(); return c && [c.x, c.y, 40, 32]; }
+    if (kind === 'park') return [slotX(0) + (slotX(OPEN_SLOTS - 1) - slotX(0)) / 2, SLOT_Y, 134, 42];
+    if (kind === 'field') return [FGX + FC * FCELL / 2, FGY + FR * FCELL / 2, FC * FCELL / 2 + 26, FR * FCELL / 2 + 26];
+    if (kind === 'fruit') {
+      const cr = current(); let f = S.tutFruit && S.grid.get(S.tutFruit.c + ',' + S.tutFruit.r) === S.tutFruit && canGo(S.tutFruit) ? S.tutFruit : null;
+      if (!f) { const free = [...S.grid.values()].filter(o => !o.hidden && canGo(o)); f = S.tutFruit = free.find(o => cr && o.color === cr.color) || free[0]; }
+      if (!f) return null; const p = cellXY(f.c, f.r); return [p.x, p.y, 24, 24];
+    }
+    return null;
+  }
+  function tutTrack() {
+    const T = S.tut, dim = $('tutDim'), hand = $('tutHand'), k = cv.getBoundingClientRect().width / W;
+    // once the player has done what we asked, the pointer goes away
+    if (!T.open && T.point === 'fruit' && T.seen.b) T.point = null;
+    const t = T.point && tutTarget(T.point);
+    dim.classList.toggle('free', !T.open);
+    if (T.open) dim.style.background = t
+      ? `radial-gradient(ellipse ${t[2] * k * 1.25}px ${t[3] * k * 1.25}px at ${t[0] * k}px ${t[1] * k}px, rgba(0,0,0,0) 80%, rgba(0,0,0,.6) 100%)`
+      : 'rgba(0,0,0,.6)';
+    hand.hidden = !t;
+    if (t) { hand.style.left = t[0] * k + 'px'; hand.style.top = (t[1] + Math.min(t[3], 26)) * k + 'px'; }
+  }
+
   function tickTimer(dt) {
-    if (S.over || S.paused || !$('overlay').hidden) return;
+    if (S.over || S.paused || S.tut || !$('overlay').hidden) return;
     S.time = Math.max(0, S.time - dt);
     $('timerFill').style.transform = `scaleX(${(S.time / S.timeMax).toFixed(4)})`;
     const sec = Math.ceil(S.time);
@@ -1447,6 +1512,7 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
       ctx.clearRect(0, 0, W, H);
       drawScene(now);
+      if (S.tut) tutTrack();
     }
     lastFrame = now;
     requestAnimationFrame(frame);
@@ -1466,17 +1532,15 @@ canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 400 / 750; 
   function showRules() {
     S.paused = true;
     overlay(`<h2>Как играть</h2><ul>
-      <li><b>Нажмите на ящик</b> в пробке. Он уедет по стрелке, если путь свободен, и встанет на парковку.</li>
-      <li>Если путь закрыт, ящик упрётся в соседа и вернётся назад.</li>
-      <li>Фрукты из очереди сами садятся в ящик <b>своего цвета</b>. Цифра под ящиком показывает, сколько мест осталось.</li>
-      <li>Полный ящик уезжает и освобождает место.</li>
-      <li>Серые ящики с <b>?</b> показывают цвет, когда перед ними освобождается дорога.</li>
-      <li><b>Легковушка</b> на парковке занимает место. Она уедет, когда заполнится ящик её цвета. Нажмите на неё, чтобы узнать, какой нужен.</li>
-      <li><b>Гараж</b> с цифрой выпускает новый ящик, как только перед ним становится пусто. Цифра показывает, сколько ящиков внутри, а цветная полоска у ворот показывает цвет следующего.</li>
-      <li><b>Монеты:</b> +50 за каждый пройденный уровень. <b>VIP</b> (100 монет) открывает новое место на парковке, так же работает нажатие на «+». <b>Перемешать</b> (50 монет) перемешивает фрукты на дорожке. <b>Упорядочить</b> бесплатно один раз за уровень ставит вперёд фрукты для ящиков на парковке.</li>
+      <li><b>Ящики едут строгой очередью.</b> Загружается только первый ящик, который стоит у ворот, на 3 фрукта.</li>
+      <li><b>Нажмите на фрукт</b> в поле внизу. Он выйдет через верхний край, только если к нему есть свободный путь: светящиеся фрукты могут идти, тёмные заперты.</li>
+      <li>Если цвет фрукта совпадает с ящиком, он запрыгнет в ящик. Если нет, встанет в <b>зону ожидания</b> (места на парковке) и сам запрыгнет, когда приедет его ящик.</li>
+      <li><b>Проигрыш:</b> фрукту некуда встать, потому что зона ожидания заполнена. Думайте, какой фрукт запустить сейчас, чтобы не забить места.</li>
+      <li>Фрукты под <b>?</b> показывают цвет, когда к ним открывается путь.</li>
+      <li><b>Легковушка</b> занимает место в зоне ожидания. Она уедет, когда отправится ящик её цвета.</li>
+      <li><b>Монеты:</b> +50 за уровень. <b>VIP</b> (100 монет) открывает ещё место в зоне ожидания, как и нажатие на «+». <b>Перемешать</b> (50 монет) перемешивает фрукты в поле. <b>Магнит</b> бесплатно один раз за уровень притягивает в текущий ящик нужные фрукты, даже запертые.</li>
       <li><b>Дождь:</b> полоска вверху показывает, сколько осталось до ливня. Небо темнеет, а в конце начинается дождь. Не успели отправить урожай, и он испорчен, придётся начать заново.</li>
-      <li>Проигрыш: парковка заполнена, а первым фруктам в очереди некуда сесть.</li>
-      <li><b>Звёзды:</b> 3 за уровень без помощников, 2 с одним, 1 с двумя и больше.</li></ul>`,
+            <li><b>Звёзды:</b> 3 за уровень без помощников, 2 с одним, 1 с двумя и больше.</li></ul>`,
       [['Продолжить', () => { S.paused = false; hideOverlay(); }], ['Уровни', showLevels, true], [progress.muted ? 'Звук: выкл' : 'Звук: вкл', toggleSound, true], ['Меню', () => { hideOverlay(); showMenu(); }, true]]);
   }
   function renderSound() {
